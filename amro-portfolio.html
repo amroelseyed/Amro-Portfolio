@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amro El-Seyed — Maschinenbau & Verfahrenstechnik</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --bg2: #0f1318;
+    --bg3: #141920;
+    --surface: #1a2030;
+    --border: #1e2a3a;
+    --accent: #e8c547;
+    --accent2: #4a9eff;
+    --text: #e8eaf0;
+    --muted: #6b7a90;
+    --subtle: #2a3548;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* CURSOR */
+  .cursor {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    position: fixed;
+    top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.15s ease;
+  }
+  .cursor-ring {
+    width: 32px; height: 32px;
+    border: 1px solid rgba(232,197,71,0.3);
+    border-radius: 50%;
+    position: fixed;
+    top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9998;
+    transition: transform 0.35s cubic-bezier(0.23,1,0.32,1);
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.4;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 20px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(to bottom, rgba(10,12,15,0.95) 0%, transparent 100%);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.3s;
+  }
+  nav.scrolled { border-bottom-color: var(--border); }
+
+  .nav-logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    text-decoration: none;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 36px;
+    list-style: none;
+  }
+  .nav-links a {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+
+  /* HERO */
+  #hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 120px 48px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(232,197,71,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(232,197,71,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+  }
+
+  .hero-glow {
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(74,158,255,0.06) 0%, transparent 70%);
+    top: -100px; right: -100px;
+    pointer-events: none;
+  }
+  .hero-glow2 {
+    position: absolute;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(232,197,71,0.05) 0%, transparent 70%);
+    bottom: 0; left: 10%;
+    pointer-events: none;
+  }
+
+  .hero-content {
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+  .hero-label::before {
+    content: '';
+    width: 40px; height: 1px;
+    background: var(--accent);
+  }
+
+  .hero-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(52px, 8vw, 96px);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 8px;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeUp 0.9s 0.3s forwards;
+  }
+
+  .hero-name em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(24px, 3.5vw, 42px);
+    color: var(--muted);
+    font-style: italic;
+    margin-bottom: 40px;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeUp 0.9s 0.45s forwards;
+  }
+
+  .hero-desc {
+    max-width: 560px;
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.75;
+    margin-bottom: 48px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 0.8s 0.6s forwards;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 0.8s 0.75s forwards;
+  }
+
+  .btn-primary {
+    padding: 14px 32px;
+    background: var(--accent);
+    color: #0a0c0f;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(232,197,71,0.3);
+  }
+
+  .btn-secondary {
+    padding: 14px 32px;
+    background: transparent;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .hero-stats {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    opacity: 0;
+    animation: fadeIn 1s 1s forwards;
+  }
+
+  .stat {
+    text-align: right;
+  }
+  .stat-number {
+    font-family: 'DM Serif Display', serif;
+    font-size: 36px;
+    color: var(--accent);
+    line-height: 1;
+    display: block;
+  }
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .scroll-indicator {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    animation: fadeIn 1s 1.5s forwards;
+  }
+  .scroll-indicator span {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .scroll-line {
+    width: 1px;
+    height: 48px;
+    background: linear-gradient(to bottom, var(--accent), transparent);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+
+  /* SECTION BASICS */
+  section {
+    padding: 120px 48px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 80px;
+  }
+
+  .section-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+  }
+
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(32px, 4vw, 52px);
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--border), transparent);
+  }
+
+  /* REVEAL ANIMATIONS */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal-left {
+    opacity: 0;
+    transform: translateX(-40px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .reveal-left.visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* ABOUT */
+  #about {
+    padding-top: 80px;
+    border-top: 1px solid var(--border);
+  }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+
+  .about-text p {
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.8;
+    margin-bottom: 24px;
+  }
+  .about-text p strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .about-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+
+  .detail-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 24px;
+    transition: border-color 0.3s, background 0.3s;
+  }
+  .detail-card:hover {
+    border-color: rgba(232,197,71,0.3);
+    background: var(--bg3);
+  }
+
+  .detail-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .detail-value {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* LANGUAGES */
+  .lang-grid {
+    margin-top: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .lang-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .lang-name {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    width: 100px;
+    flex-shrink: 0;
+  }
+
+  .lang-bar-bg {
+    flex: 1;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .lang-bar {
+    height: 100%;
+    background: linear-gradient(to right, var(--accent), var(--accent2));
+    border-radius: 2px;
+    width: 0;
+    transition: width 1.2s cubic-bezier(0.23,1,0.32,1);
+  }
+
+  .lang-level {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    width: 120px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* TIMELINE */
+  #experience, #education {
+    border-top: 1px solid var(--border);
+  }
+
+  .timeline {
+    position: relative;
+    padding-left: 40px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, var(--accent), transparent);
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 64px;
+    padding-left: 32px;
+  }
+
+  .timeline-dot {
+    position: absolute;
+    left: -44px;
+    top: 6px;
+    width: 10px; height: 10px;
+    border: 2px solid var(--accent);
+    background: var(--bg);
+    border-radius: 50%;
+    transition: background 0.3s;
+  }
+
+  .timeline-item:hover .timeline-dot {
+    background: var(--accent);
+  }
+
+  .timeline-period {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    margin-bottom: 8px;
+  }
+
+  .timeline-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 24px;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .timeline-org {
+    font-size: 14px;
+    color: var(--accent2);
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+
+  .timeline-desc {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .timeline-desc li {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .timeline-desc li::before {
+    content: '→';
+    color: var(--accent);
+    flex-shrink: 0;
+    font-size: 12px;
+    margin-top: 2px;
+  }
+
+  /* PROJECTS */
+  #projects {
+    border-top: 1px solid var(--border);
+  }
+
+  .projects-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+
+  .project-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, transform 0.3s;
+    cursor: default;
+  }
+
+  .project-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(to right, var(--accent), var(--accent2));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.23,1,0.32,1);
+  }
+
+  .project-card:hover::before { transform: scaleX(1); }
+  .project-card:hover {
+    border-color: rgba(232,197,71,0.2);
+    transform: translateY(-4px);
+  }
+
+  .project-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    margin-bottom: 24px;
+  }
+
+  .project-type {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding: 4px 10px;
+    border: 1px solid rgba(232,197,71,0.2);
+    display: inline-block;
+  }
+
+  .project-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: 16px;
+  }
+
+  .project-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 24px;
+  }
+
+  .project-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--accent2);
+    background: rgba(74,158,255,0.08);
+    border: 1px solid rgba(74,158,255,0.15);
+    padding: 4px 10px;
+    letter-spacing: 0.08em;
+  }
+
+  .project-highlight {
+    margin-top: 24px;
+    padding: 16px;
+    background: rgba(232,197,71,0.04);
+    border-left: 2px solid var(--accent);
+  }
+  .project-highlight p {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .project-highlight p strong {
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* PROJECT DETAIL GRID */
+  .project-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 20px;
+  }
+
+  .project-detail-block {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    padding: 16px 18px;
+  }
+
+  .project-detail-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .project-detail-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .project-detail-list li {
+    font-size: 12.5px;
+    color: var(--muted);
+    line-height: 1.55;
+    padding-left: 12px;
+    position: relative;
+  }
+
+  .project-detail-list li::before {
+    content: '·';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+  }
+
+  .project-detail-list li strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  /* Projects full-width layout */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  /* SKILLS */
+  #skills {
+    border-top: 1px solid var(--border);
+  }
+
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+  }
+
+  .skill-category {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 32px;
+  }
+
+  .skill-category-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .skill-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    list-style: none;
+  }
+
+  .skill-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text);
+    transition: color 0.2s;
+  }
+  .skill-item:hover { color: var(--accent); }
+
+  .skill-dot {
+    width: 4px; height: 4px;
+    background: var(--accent);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* CONTACT */
+  #contact {
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .contact-heading {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(40px, 6vw, 72px);
+    color: var(--text);
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+  }
+
+  .contact-sub {
+    font-size: 16px;
+    color: var(--muted);
+    margin-bottom: 48px;
+  }
+
+  .contact-grid {
+    display: flex;
+    justify-content: center;
+    gap: 2px;
+    flex-wrap: wrap;
+    max-width: 600px;
+    margin: 0 auto 64px;
+  }
+
+  .contact-item {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 24px 32px;
+    text-decoration: none;
+    flex: 1;
+    min-width: 180px;
+    transition: border-color 0.3s, background 0.3s;
+    display: block;
+  }
+  .contact-item:hover {
+    border-color: rgba(232,197,71,0.3);
+    background: var(--bg3);
+  }
+
+  .contact-item-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .contact-item-value {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 500;
+    display: block;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-left {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+
+  .footer-right {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* KEYFRAMES */
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    to { opacity: 1; }
+  }
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.4; transform: scaleY(1); }
+    50% { opacity: 1; transform: scaleY(1.1); }
+  }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 2px;
+    background: linear-gradient(to right, var(--accent), var(--accent2));
+    z-index: 200;
+    transition: width 0.1s;
+  }
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    section { padding: 80px 24px; }
+    #hero { padding: 100px 24px 60px; }
+    .about-grid { grid-template-columns: 1fr; gap: 40px; }
+    .projects-grid { grid-template-columns: 1fr; }
+    .skills-grid { grid-template-columns: 1fr; }
+    .hero-stats { display: none; }
+    footer { padding: 24px; flex-direction: column; gap: 8px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav id="mainNav">
+  <a class="nav-logo" href="#">AES / Portfolio</a>
+  <ul class="nav-links">
+    <li><a href="#about">Profil</a></li>
+    <li><a href="#experience">Erfahrung</a></li>
+    <li><a href="#education">Bildung</a></li>
+    <li><a href="#projects">Projekte</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#contact">Kontakt</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div id="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+
+  <div class="hero-content">
+    <div class="hero-label">Maschinenbau & Verfahrenstechnik</div>
+    <h1 class="hero-name">Amro<br><em>El-Seyed</em></h1>
+    <p class="hero-title">Ingenieur in Ausbildung</p>
+    <p class="hero-desc">
+      Motivierter Maschinenbaustudent an der Universität Bremen mit Leidenschaft für Technik, Innovation und interdisziplinäre Problemlösung — von Mikrocontroller-Systemen bis zur Fertigungsoptimierung.
+    </p>
+    <div class="hero-actions">
+      <a href="#projects" class="btn-primary">Projekte ansehen</a>
+      <a href="#contact" class="btn-secondary">Kontakt aufnehmen</a>
+    </div>
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat">
+      <span class="stat-number">4+</span>
+      <span class="stat-label">Sprachen</span>
+    </div>
+    <div class="stat">
+      <span class="stat-number">2</span>
+      <span class="stat-label">Uni-Projekte</span>
+    </div>
+    <div class="stat">
+      <span class="stat-number">20h</span>
+      <span class="stat-label">pro Woche</span>
+    </div>
+  </div>
+
+  <div class="scroll-indicator">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-header reveal">
+    <span class="section-number">01</span>
+    <h2 class="section-title">Profil</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="about-grid">
+    <div class="about-text reveal">
+      <p>
+        Ich bin <strong>Amro El-Seyed</strong>, Bachelorstudent der Maschinenbau & Verfahrenstechnik an der Universität Bremen. Meine Arbeit verbindet ingenieurwissenschaftliche Grundlagen mit praktischer Umsetzung — ob im Labor, in der Werkstatt oder beim Programmieren von Mikrocontrollern.
+      </p>
+      <p>
+        Durch meine Tätigkeit als <strong>Nachhilfelehrer</strong> habe ich gelernt, komplexe Sachverhalte klar zu kommunizieren. Beim Praktikum in der <strong>Fahrzeugwerkstatt</strong> und in der <strong>Kostenanalytik</strong> bei Heino Ilsemann habe ich praktische Berufserfahrung in technisch anspruchsvollen Umgebungen gesammelt.
+      </p>
+      <p>
+        Ich bin zielorientiert, selbstdiszipliniert und bringe mich gerne aktiv in Teams ein.
+      </p>
+
+      <div class="lang-grid" id="langGrid">
+        <div class="lang-item">
+          <span class="lang-name">Arabisch</span>
+          <div class="lang-bar-bg"><div class="lang-bar" data-width="100"></div></div>
+          <span class="lang-level">Muttersprache</span>
+        </div>
+        <div class="lang-item">
+          <span class="lang-name">Deutsch</span>
+          <div class="lang-bar-bg"><div class="lang-bar" data-width="100"></div></div>
+          <span class="lang-level">Muttersprache</span>
+        </div>
+        <div class="lang-item">
+          <span class="lang-name">Englisch</span>
+          <div class="lang-bar-bg"><div class="lang-bar" data-width="85"></div></div>
+          <span class="lang-level">Verhandlungssicher</span>
+        </div>
+        <div class="lang-item">
+          <span class="lang-name">Französisch</span>
+          <div class="lang-bar-bg"><div class="lang-bar" data-width="30"></div></div>
+          <span class="lang-level">Grundkenntnisse</span>
+        </div>
+        <div class="lang-item">
+          <span class="lang-name">Spanisch</span>
+          <div class="lang-bar-bg"><div class="lang-bar" data-width="30"></div></div>
+          <span class="lang-level">Grundkenntnisse</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="about-details reveal" style="transition-delay: 0.2s;">
+      <div class="detail-card">
+        <div class="detail-label">Studium</div>
+        <div class="detail-value">Maschinenbau &<br>Verfahrenstechnik B.Sc.</div>
+      </div>
+      <div class="detail-card">
+        <div class="detail-label">Universität</div>
+        <div class="detail-value">Universität Bremen</div>
+      </div>
+      <div class="detail-card">
+        <div class="detail-label">Schulabschluss</div>
+        <div class="detail-value">Allgemeine<br>Hochschulreife 2022</div>
+      </div>
+      <div class="detail-card">
+        <div class="detail-label">Standort</div>
+        <div class="detail-value">Worpswede,<br>Deutschland</div>
+      </div>
+      <div class="detail-card">
+        <div class="detail-label">Führerschein</div>
+        <div class="detail-value">Klasse B</div>
+      </div>
+      <div class="detail-card" style="border-color: rgba(232,197,71,0.25); background: rgba(232,197,71,0.03);">
+        <div class="detail-label" style="color: var(--accent);">Verfügbarkeit</div>
+        <div class="detail-value">Werkstudent / Praktikum<br><span style="color: var(--accent); font-size: 13px; font-family: 'DM Mono', monospace;">bis zu 20 h/Woche</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="experience">
+  <div class="section-header reveal">
+    <span class="section-number">02</span>
+    <h2 class="section-title">Berufserfahrung</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="timeline">
+    <div class="timeline-item reveal">
+      <div class="timeline-dot"></div>
+      <div class="timeline-period">03/2025 — 06/2025</div>
+      <h3 class="timeline-title">Kostenanalytik Produktion</h3>
+      <div class="timeline-org">Heino Ilsemann GmbH · Bremen</div>
+      <ul class="timeline-desc">
+        <li>Eigenständige Kostenanalysen zur Identifikation und Reduktion unnötiger Ausgaben</li>
+        <li>Abteilungsübergreifende Zusammenarbeit für umfassende Kostenübersichten</li>
+        <li>Vertieftes technisches Verständnis durch direkte Arbeit mit Maschinen und Maschinenelementen</li>
+        <li>Fundierte Kenntnisse über Aufbau und Funktion von Maschinenelementen entwickelt</li>
+      </ul>
+    </div>
+
+    <div class="timeline-item reveal">
+      <div class="timeline-dot"></div>
+      <div class="timeline-period">07/2022 — 01/2025</div>
+      <h3 class="timeline-title">Nachhilfelehrer/in</h3>
+      <div class="timeline-org">ProArbeit · Bremen</div>
+      <ul class="timeline-desc">
+        <li>Individuelle Nachhilfe für Abiturienten in Mathematik, Physik und Chemie</li>
+        <li>Vorbereitung auf Klausuren, Abiturprüfungen und mündliche Prüfungen</li>
+        <li>Erstellung von Lernplänen und Übungsaufgaben für nachhaltige Leistungsverbesserung</li>
+        <li>Analyse von Lernschwierigkeiten und gezielte Förderung</li>
+      </ul>
+    </div>
+
+    <div class="timeline-item reveal">
+      <div class="timeline-dot"></div>
+      <div class="timeline-period">08/2022 — 05/2023</div>
+      <h3 class="timeline-title">Praktikant — Kfz-Technik</h3>
+      <div class="timeline-org">AZ Werkstatt · Bremen</div>
+      <ul class="timeline-desc">
+        <li>Reparatur- und Wartungsarbeiten an verschiedenen Fahrzeugtypen</li>
+        <li>Präzise Messungen sowie technische Prüf- und Diagnoseverfahren</li>
+        <li>Planung, Vorbereitung und Strukturierung aller Arbeitsabläufe</li>
+        <li>Abstimmung der Arbeitsschritte im Team für effizienten Serviceprozess</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- EDUCATION -->
+<section id="education">
+  <div class="section-header reveal">
+    <span class="section-number">03</span>
+    <h2 class="section-title">Bildungsweg</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="timeline">
+    <div class="timeline-item reveal">
+      <div class="timeline-dot"></div>
+      <div class="timeline-period">seit 2022</div>
+      <h3 class="timeline-title">Bachelor of Science</h3>
+      <div class="timeline-org">Universität Bremen · Fachbereich 4 Produktionstechnik</div>
+      <ul class="timeline-desc">
+        <li>Maschinenbau und Verfahrenstechnik (B.Sc.)</li>
+        <li>Anwendungsprojekt: Steuerung der Effizienz eines Wasserelektrolyseurs (Adafruit Metro M4 Express)</li>
+        <li>Bachelorprojekt: Schlierenfotografie beim Impulsumformen</li>
+        <li>Schwerpunkte: Elektrotechnik, Thermodynamik, CAD, Messtechnik, Python-Programmierung</li>
+      </ul>
+    </div>
+
+    <div class="timeline-item reveal">
+      <div class="timeline-dot"></div>
+      <div class="timeline-period">bis 2022</div>
+      <h3 class="timeline-title">Allgemeine Hochschulreife</h3>
+      <div class="timeline-org">IGS Lilienthal · Lilienthal</div>
+      <ul class="timeline-desc">
+        <li>Abitur mit naturwissenschaftlichem Schwerpunkt</li>
+        <li>Leistungsfächer: Mathematik, Chemie, Physik, Englisch und Geschichte</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="section-header reveal">
+    <span class="section-number">04</span>
+    <h2 class="section-title">Universitätsprojekte</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="projects-grid">
+
+    <!-- PROJECT 1 -->
+    <div class="project-card reveal">
+      <div class="project-number">Projekt 01</div>
+      <div class="project-type">Anwendungsprojekt · Sept. 2023</div>
+      <h3 class="project-title">Effizienz eines Wasser­elektrolyseurs</h3>
+      <p class="project-desc">
+        Gruppenarbeit mit 5 Studierenden unter Betreuung von Prof. Dr.-Ing. Jorg Thöming. Aufbau, Inbetriebnahme und vollständige Charakterisierung eines mikrocontroller-gesteuerten Wasserelektrolyse-Systems mit Kalilauge (KOH) als Elektrolyt.
+      </p>
+
+      <div class="project-detail-grid">
+        <div class="project-detail-block">
+          <div class="project-detail-title">Hardware & Aufbau</div>
+          <ul class="project-detail-list">
+            <li>Mikrocontroller: <strong>Adafruit Metro M4 Express</strong> (CircuitPython via Mu Editor)</li>
+            <li>Strommessung: <strong>INA219-Sensor</strong> (max. 3,2 A) — präziser als ACS712-Sensor, der bei kleinen Strömen stark schwankte</li>
+            <li>Spannungsregler, SD-Karten-Modul, LCD-Display, WAGO-Klemmen</li>
+            <li>Gehäuse aus Aluminiumprofil + Plexiglas; Innenteile vollständig <strong>3D-gedruckt und CAD-modelliert</strong></li>
+            <li>Labornetzteil: max. 13,5 V / 3,2 A; Wasserpumpe mit 70 RPM Betriebsgeschwindigkeit</li>
+            <li>5 parallelgeschaltete Elektrolysezellen</li>
+          </ul>
+        </div>
+
+        <div class="project-detail-block">
+          <div class="project-detail-title">Software & Messtechnik</div>
+          <ul class="project-detail-list">
+            <li>Eigenentwickelter CircuitPython-Code mit zwei Eingabemodi: Regelspannung (0–3,3 V) oder gewünschte Elektrolyseurspannung (9,31–11,69 V)</li>
+            <li>Fit-Funktion aus Excel-Regression: <strong>U<sub>EL</sub> = 0,7214 · U<sub>Regel</sub> + 9,3092</strong></li>
+            <li>Volumenstrom-Fit: <strong>V̇ = 0,6276 · I</strong> (angepasst durch Ursprungskorrektur)</li>
+            <li>Echtzeit-Ausgabe von Spannung, Strom, Volumenstrom & Wirkungsgrad auf LCD und SD-Karte</li>
+            <li>Volumenstrommessung per Bubble-O-Meter + Stoppuhr (manuell)</li>
+            <li>Fehlerbehebung im Code u. a. mit Unterstützung von ChatGPT (Syntaxprüfung, I²C-Debugging)</li>
+          </ul>
+        </div>
+
+        <div class="project-detail-block">
+          <div class="project-detail-title">Physikalische Grundlagen</div>
+          <ul class="project-detail-list">
+            <li><strong>1. Faradaysches Gesetz:</strong> m = C · I · t — Masse proportional zur Ladung</li>
+            <li><strong>2. Faradaysches Gesetz:</strong> n = Q / (z · F) — Stoffmenge proportional zur Ladung</li>
+            <li>Faradayscher Wirkungsgrad: ε<sub>F</sub> = m<sub>real</sub> / m<sub>ideal</sub> · 100</li>
+            <li>Energetischer Wirkungsgrad: η<sub>E</sub> = (V̇<sub>H₂</sub> · H<sub>s</sub>) / P<sub>el</sub> · 100</li>
+          </ul>
+        </div>
+
+        <div class="project-detail-block">
+          <div class="project-detail-title">Ergebnisse & Diskussion</div>
+          <ul class="project-detail-list">
+            <li>Faradayscher Wirkungsgrad: konstant ~<strong>101,7 %</strong> → Elektrolyseur arbeitet effizient</li>
+            <li>Energetischer Wirkungsgrad: ∅ <strong>52,6 %</strong>; stabilisiert sich bei ~60 % im oberen Messbereich</li>
+            <li>Industrielle Alkalische Elektrolyseure: 63–70 % → System im Vergleich wettbewerbsfähig</li>
+            <li>Verluste durch Wärmeentwicklung, Druckverluste in Schläuchen, Oxidation an der Anode (gelbbraune Verfärbung der KOH-Lösung)</li>
+            <li>Tatsächlicher Aufwand: ~<strong>240 h/Person</strong> (geplant: 200 h) — Projektzeitraum: Mai–Sept. 2023</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="project-tags" style="margin-top: 20px;">
+        <span class="tag">CircuitPython</span>
+        <span class="tag">Adafruit Metro M4</span>
+        <span class="tag">INA219-Sensor</span>
+        <span class="tag">CAD / 3D-Druck</span>
+        <span class="tag">Elektrochemie</span>
+        <span class="tag">Excel-Regression</span>
+        <span class="tag">Faradaysche Gesetze</span>
+        <span class="tag">Projektmanagement</span>
+      </div>
+    </div>
+
+    <!-- PROJECT 2 -->
+    <div class="project-card reveal" style="transition-delay: 0.15s;">
+      <div class="project-number">Projekt 02</div>
+      <div class="project-type">Bachelorprojekt · laufend</div>
+      <h3 class="project-title">Schlierenfoto­grafie beim Impuls­umformen</h3>
+      <p class="project-desc">
+        Einsatz der optischen Schlierenfotografie zur nichtinvasiven Visualisierung von Druckwellen und Dichtegradientenfeldern beim elektromagnetischen Impulsumformen — einer Hochgeschwindigkeits-Umformtechnik, die Druckpulse im Millisekundenbereich erzeugt.
+      </p>
+
+      <div class="project-detail-grid">
+        <div class="project-detail-block">
+          <div class="project-detail-title">Messprinzip & Optik</div>
+          <ul class="project-detail-list">
+            <li>Schlierenoptik nutzt die Ablenkung von Lichtstrahlen durch <strong>lokale Dichtegradienten</strong> im Medium</li>
+            <li>Aufbau: Lichtquelle → Kollimationslinse → Messstrecke → Schneidenkante (Schlierenmesser) → Kamera</li>
+            <li>Sichtbarmachung von Phänomenen, die mit bloßem Auge unsichtbar sind (Druckwellen, Stoßfronten)</li>
+            <li>Hochgeschwindigkeitskamera zur zeitlich aufgelösten Erfassung der transienten Vorgänge</li>
+          </ul>
+        </div>
+
+        <div class="project-detail-block">
+          <div class="project-detail-title">Impulsumformverfahren</div>
+          <ul class="project-detail-list">
+            <li>Elektromagnetisches Impulsumformen: Kurzzeit-Energieentladung erzeugt Magnetfelder und Druckimpulse</li>
+            <li>Extreme Dehnraten (&gt;10³ s⁻¹) — werkzeuglos und berührungslos</li>
+            <li>Anwendung bei schwer umformbaren Werkstoffen (Aluminium, Magnesium, hochfeste Stähle)</li>
+            <li>Ziel: Korrelation zwischen optisch erfassten Druckfeldern und resultierenden Werkstückeigenschaften</li>
+          </ul>
+        </div>
+
+        <div class="project-detail-block">
+          <div class="project-detail-title">Wissenschaftlicher Beitrag</div>
+          <ul class="project-detail-list">
+            <li>Verbindung von Strömungsmechanik, Optik und Fertigungstechnik in einem Experiment</li>
+            <li>Quantitative Auswertung der Schlierenbilder zur Rekonstruktion von Druckverteilungen</li>
+            <li>Beitrag zum besseren Verständnis der Energieübertragung beim Impulsumformen</li>
+          </ul>
+        </div>
+
+        <div class="project-detail-block">
+          <div class="project-detail-title">Kompetenzen</div>
+          <ul class="project-detail-list">
+            <li>Optischer Versuchsaufbau und Justierung der Schlierenanlage</li>
+            <li>Bildauswertung und -analyse der Hochgeschwindigkeitsaufnahmen</li>
+            <li>Wissenschaftliches Schreiben und Ergebnisdokumentation</li>
+            <li>Interdisziplinäre Verknüpfung von Physik, Messtechnik und Maschinenbau</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="project-tags" style="margin-top: 20px;">
+        <span class="tag">Schlierenfotografie</span>
+        <span class="tag">Hochgeschwindigkeitskamera</span>
+        <span class="tag">Impulsumformen</span>
+        <span class="tag">Optische Messtechnik</span>
+        <span class="tag">Strömungsmechanik</span>
+        <span class="tag">Bildauswertung</span>
+        <span class="tag">Fertigungstechnik</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="section-header reveal">
+    <span class="section-number">05</span>
+    <h2 class="section-title">Fähigkeiten</h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="skills-grid">
+    <div class="skill-category reveal">
+      <div class="skill-category-title">Technik & Software</div>
+      <ul class="skill-list">
+        <li class="skill-item"><span class="skill-dot"></span>Python / CircuitPython</li>
+        <li class="skill-item"><span class="skill-dot"></span>CAD-Kenntnisse</li>
+        <li class="skill-item"><span class="skill-dot"></span>3D-Druck / Modellierung</li>
+        <li class="skill-item"><span class="skill-dot"></span>Mikrocontroller-Programmierung</li>
+        <li class="skill-item"><span class="skill-dot"></span>Open Office / MS Office</li>
+        <li class="skill-item"><span class="skill-dot"></span>Messtechnik & Sensorik</li>
+      </ul>
+    </div>
+
+    <div class="skill-category reveal" style="transition-delay: 0.1s;">
+      <div class="skill-category-title">Ingenieurwesen</div>
+      <ul class="skill-list">
+        <li class="skill-item"><span class="skill-dot"></span>Elektrotechnik & Schaltungsbau</li>
+        <li class="skill-item"><span class="skill-dot"></span>Verfahrenstechnik</li>
+        <li class="skill-item"><span class="skill-dot"></span>Kostenanalyse & -optimierung</li>
+        <li class="skill-item"><span class="skill-dot"></span>Kfz-Diagnose & Wartung</li>
+        <li class="skill-item"><span class="skill-dot"></span>Technische Dokumentation</li>
+        <li class="skill-item"><span class="skill-dot"></span>Optische Messtechnik</li>
+      </ul>
+    </div>
+
+    <div class="skill-category reveal" style="transition-delay: 0.2s;">
+      <div class="skill-category-title">Soft Skills</div>
+      <ul class="skill-list">
+        <li class="skill-item"><span class="skill-dot"></span>Teamfähigkeit</li>
+        <li class="skill-item"><span class="skill-dot"></span>Selbstdisziplin & Eigeninitiative</li>
+        <li class="skill-item"><span class="skill-dot"></span>Kommunikative Stärke</li>
+        <li class="skill-item"><span class="skill-dot"></span>Mehrsprachigkeit (4 Sprachen)</li>
+        <li class="skill-item"><span class="skill-dot"></span>Didaktik & Wissensvermittlung</li>
+        <li class="skill-item"><span class="skill-dot"></span>Projektmanagement</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section-header reveal" style="justify-content: center; text-align: center; flex-direction: column; gap: 0;">
+    <span class="section-number" style="margin-bottom: 16px;">06</span>
+  </div>
+
+  <h2 class="contact-heading reveal">Kontakt aufnehmen</h2>
+  <p class="contact-sub reveal">Offen für Werkstudentenstellen und Praktika — <strong style="color: var(--accent);">verfügbar bis zu 20 Stunden pro Woche.</strong></p>
+
+  <div class="contact-grid reveal">
+    <a href="mailto:amro@uni-bremen.de" class="contact-item">
+      <span class="contact-item-label">E-Mail</span>
+      <span class="contact-item-value">amro@uni-bremen.de</span>
+    </a>
+    <a href="tel:+4917684984622" class="contact-item">
+      <span class="contact-item-label">Telefon</span>
+      <span class="contact-item-value">+49 176 849 846 22</span>
+    </a>
+    <div class="contact-item">
+      <span class="contact-item-label">Standort</span>
+      <span class="contact-item-value">Worpswede / Bremen</span>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">© 2025 Amro El-Seyed — Portfolio</div>
+  <div class="footer-right">Maschinenbau & Verfahrenstechnik · Universität Bremen</div>
+</footer>
+
+<script>
+  // CURSOR
+  const cursor = document.getElementById('cursor');
+  const cursorRing = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.transform = `translate(${mx - 4}px, ${my - 4}px)`;
+  });
+  function animateCursor() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    cursorRing.style.transform = `translate(${rx - 16}px, ${ry - 16}px)`;
+    requestAnimationFrame(animateCursor);
+  }
+  animateCursor();
+
+  // PROGRESS BAR
+  const bar = document.getElementById('progressBar');
+  window.addEventListener('scroll', () => {
+    const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+    bar.style.width = (pct * 100) + '%';
+  });
+
+  // NAV SCROLL
+  const nav = document.getElementById('mainNav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  // REVEAL
+  const reveals = document.querySelectorAll('.reveal, .reveal-left');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+  reveals.forEach(el => observer.observe(el));
+
+  // LANGUAGE BARS
+  const langObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.querySelectorAll('.lang-bar').forEach(bar => {
+          bar.style.width = bar.dataset.width + '%';
+        });
+        langObserver.disconnect();
+      }
+    });
+  }, { threshold: 0.3 });
+  langObserver.observe(document.getElementById('langGrid'));
+
+  // STAGGER reveals within sections
+  document.querySelectorAll('.timeline-item, .project-card, .skill-category, .detail-card').forEach((el, i) => {
+    el.style.transitionDelay = `${(i % 3) * 0.12}s`;
+  });
+</script>
+</body>
+</html>
